@@ -23,14 +23,13 @@
             var app;
 
             Polymer({
-                app: null,
                 is: "wood-listbox",
+
                 properties: {
                     selected: {
                         type: Array,
                         notify: true,
-                        value: [],
-                        //reflectToAttribute: true
+                        value: []
                     },
 
                     items: {
@@ -38,12 +37,10 @@
                         notify: true,
                         observer: '_itemsChanged',
                         value: []
-                    },
-
-                    src: {
-                        type: String
                     }
+
                 },
+
                 attached() {
                     console.log("attached : items = " + this.items);
 
