@@ -33,7 +33,7 @@ onItemArrayChanged propname tagger =
 
 onSelectedChanged : (Dict String String -> msg) -> Attribute msg
 onSelectedChanged tagger =
-    onItemArrayChanged "select-changed" tagger
+    onItemArrayChanged "selected-changed" tagger
 
 
 onItemsChanged : (Dict String String -> msg) -> Attribute msg
