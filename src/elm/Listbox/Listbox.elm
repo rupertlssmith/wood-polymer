@@ -5,9 +5,9 @@ import Maybe exposing (Maybe)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Html exposing (Attribute, Html, text, button, span, div, node)
-import Html.Attributes exposing (attribute, class)
+import Html.Attributes exposing (attribute, class, property)
 import Html.Events exposing (on, onClick, onMouseOver, onMouseOut)
-import Html.App exposing (programWithFlags)
+import Html.App exposing (program)
 
 
 -- The exposed API
@@ -23,12 +23,22 @@ listbox attrs =
 
 items : Dict String String -> Attribute msg
 items val =
-    attribute "items" <| Encode.encode 0 (encodeItems (Dict.toList val))
+    property "items" <| (encodeItems (Dict.toList val))
+
+
+onItemArrayChanged : String -> (Dict String String -> msg) -> Attribute msg
+onItemArrayChanged propname tagger =
+    on propname <| Decode.map tagger <| Decode.map Dict.fromList decodeItems
 
 
 onSelectedChanged : (Dict String String -> msg) -> Attribute msg
 onSelectedChanged tagger =
-    on "selected-changed" <| Decode.map tagger <| Decode.map Dict.fromList decodeItems
+    onItemArrayChanged "select-changed" tagger
+
+
+onItemsChanged : (Dict String String -> msg) -> Attribute msg
+onItemsChanged tagger =
+    onItemArrayChanged "items-changed" tagger
 
 
 encodeItems : List ( String, String ) -> Encode.Value
@@ -46,6 +56,9 @@ decodeItems =
 -- The internals
 
 
+port itemsChanged : (List ( String, String ) -> msg) -> Sub msg
+
+
 type alias Model =
     { items : Dict String String
     , selectedItems : Dict String String
@@ -53,9 +66,9 @@ type alias Model =
     }
 
 
-init : { a | items : List ( String, String ) } -> ( Model, Cmd Msg )
-init flags =
-    ( { items = Dict.fromList flags.items
+init : ( Model, Cmd Msg )
+init =
+    ( { items = Dict.empty
       , selectedItems = Dict.empty
       , hoverItem = Nothing
       }
@@ -121,7 +134,8 @@ itemsToList model ( idx, value ) =
 
 
 type Msg
-    = Select String
+    = ItemsChanged (List ( String, String ))
+    | Select String
     | Deselect String
     | MouseOver String
     | MouseOut String
@@ -130,6 +144,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case (Debug.log "Listbox" msg) of
+        ItemsChanged items ->
+            ( { model | items = Dict.fromList items }, Cmd.none )
+
         Select idx ->
             case (Dict.get idx model.items) of
                 Just value ->
@@ -160,11 +177,16 @@ update msg model =
             ( { model | hoverItem = Nothing }, Cmd.none )
 
 
-main : Program { items : List ( String, String ) }
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    itemsChanged ItemsChanged
+
+
+main : Program Never
 main =
-    programWithFlags
+    program
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
