@@ -1,0 +1,28 @@
+<dom-module id="wood-item">
+    <template>
+      <style>
+        :host {
+          display: block;
+          padding-left: 12px;
+          line-height: 48px;
+          min-height: 48px;
+        }
+
+        :host(.wood-selected), .wood-selected {
+          font-weight: bold;
+        }
+
+        :host(.wood-highlight), .wood-highlight {
+          background: #eee;
+        }
+
+      </style>
+    <content></content>
+  </template>
+
+    <script>
+        Polymer({
+            is: 'wood-item'
+        });
+    </script>
+</dom-module>

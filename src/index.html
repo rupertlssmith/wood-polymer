@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:ng="http://angularjs.org" class="no-js" lang="en" ng-app="jModeller" id="ng-app">
+
+<head>
+    <meta charset="UTF-8">
+
+    <script src="libs/webcomponentsjs/webcomponents-lite.js"></script>
+    <script>
+        window.Polymer = {
+            dom: 'shadow',
+            lazyRegister: true
+        };
+    </script>
+
+    <link rel="stylesheet" href="styles/roboto.css" />
+    <link rel="stylesheet" href="styles/material-icons.css" />
+    <link rel="stylesheet" href="styles/material.green-indigo.min.css" />
+
+    <link rel="stylesheet" href="styles/wood.css">
+
+    <link rel="import" href="wood-listbox.html"/>
+    <link rel="import" href="wood-item.html"/>
+    <script src="wood.js"></script>
+</head>
+
+<body>
+    <script>
+        var app = Elm.Main.fullscreen();
+    </script>
+</body>
+
+</html>

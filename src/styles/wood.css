@@ -1,0 +1,12 @@
+wood-listbox {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 24px;
+    border-top-width: 2px;
+    border-top-color: grey;
+    border-top-style: solid;
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+    border-bottom-color: grey;
+    width: 300px;
+}

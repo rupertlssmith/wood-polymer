@@ -1,0 +1,58 @@
+<link rel="import" href="libs/polymer/polymer.html" />
+
+<dom-module id="wood-listbox">
+    <template>
+
+        <style>
+          :host {
+            display: block;
+            padding: 8px 0;
+
+            background: var(--wood-listbox-background-color, --primary-background-color);
+            color: var(--wood-listbox-color, --primary-text-color);
+
+            @apply(--wood-listbox);
+          }
+        </style>
+
+          <content></content>
+    </template>
+
+    <script>
+        (function() {
+            var app;
+
+            Polymer({
+                is: "wood-listbox",
+                properties: {
+                    selected: {
+                        type: Array,
+                        notify: true,
+                        value: [],
+                        reflectToAttribute: true
+                    },
+
+                    items: {
+                        type: Array,
+                        value: []
+                    },
+
+                    src: {
+                        type: String
+                    }
+                },
+                attached() {
+                    console.log("attached : items = " + this.items)
+
+                    app = Elm.Listbox.embed(this, {
+                        items: this.items
+                    });
+
+                    app.ports.setSelected.subscribe(items => {
+                        this.selected = items;
+                    });
+                }
+            });
+        })();
+    </script>
+</dom-module>
