@@ -8,6 +8,8 @@ import Html exposing (Attribute, Html, text, button, span, div, node)
 import Html.Attributes exposing (attribute, class, property)
 import Html.Events exposing (on, onClick, onMouseOver, onMouseOut)
 import Html.App exposing (program)
+import Material
+import Material.Toggles as Toggles
 
 
 -- The exposed API
@@ -60,7 +62,8 @@ port itemsChanged : (List ( String, String ) -> msg) -> Sub msg
 
 
 type alias Model =
-    { items : Dict String String
+    { mdl : Material.Model
+    , items : Dict String String
     , selectedItems : Dict String String
     , hoverItem : Maybe String
     }
@@ -68,7 +71,8 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { items = Dict.empty
+    ( { mdl = Material.model
+      , items = Dict.empty
       , selectedItems = Dict.empty
       , hoverItem = Nothing
       }
@@ -85,7 +89,7 @@ view : Model -> Html Msg
 view model =
     div
         []
-        (Dict.toList model.items |> List.map (itemsToList model))
+        (Dict.toList model.items |> List.indexedMap (itemsToList model))
 
 
 isHover : String -> Model -> Bool
@@ -98,7 +102,7 @@ isSelected idx model =
     Dict.member idx model.selectedItems
 
 
-itemsToList model ( idx, value ) =
+itemsToList model listIdx ( idx, value ) =
     let
         hover =
             isHover idx model
@@ -130,11 +134,19 @@ itemsToList model ( idx, value ) =
     in
         woodItem
             styleAttrs
-            [ text value ]
+            [ Toggles.checkbox Mdl
+                [ listIdx ]
+                model.mdl
+                [ Toggles.ripple
+                , Toggles.value selected
+                ]
+                [ text value ]
+            ]
 
 
 type Msg
-    = ItemsChanged (List ( String, String ))
+    = Mdl (Material.Msg Msg)
+    | ItemsChanged (List ( String, String ))
     | Select String
     | Deselect String
     | MouseOver String
@@ -144,6 +156,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case (Debug.log "Listbox" msg) of
+        Mdl action' ->
+            Material.update action' model
+
         ItemsChanged items ->
             ( { model | items = Dict.fromList items }, Cmd.none )
 
