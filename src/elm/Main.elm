@@ -18,7 +18,6 @@ import Material.Grid as Grid
 import Material.Chip as Chip
 import Listbox exposing (listbox, onSelectedChanged, items)
 import Html exposing (..)
-import Html.App exposing (..)
 
 
 type alias Model =
@@ -44,7 +43,7 @@ update msg model =
             items
 
 
-main : Program Never
+main : Program Never (Dict String String) Msg
 main =
     beginnerProgram
         { model = Dict.empty

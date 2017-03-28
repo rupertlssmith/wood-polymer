@@ -1,4 +1,4 @@
-port module Listbox exposing (listbox, items, onSelectedChanged, setSelected)
+port module Listbox exposing (listbox, items, initiallySelected, onSelectedChanged)
 
 import Dict exposing (Dict)
 import Maybe exposing (Maybe)
@@ -7,15 +7,12 @@ import Json.Encode as Encode
 import Html exposing (Attribute, Html, text, button, span, div, node)
 import Html.Attributes exposing (attribute, class, property)
 import Html.Events exposing (on, onClick, onMouseOver, onMouseOut)
-import Html.App exposing (program)
+import Html exposing (program)
 import Material
 import Material.Toggles as Toggles
 
 
 -- The exposed API
-
-
-port setSelected : List ( String, String ) -> Cmd msg
 
 
 listbox : List (Attribute msg) -> Html msg
@@ -26,6 +23,11 @@ listbox attrs =
 items : Dict String String -> Attribute msg
 items val =
     property "items" <| (encodeItems (Dict.toList val))
+
+
+initiallySelected : Dict String String -> Attribute msg
+initiallySelected val =
+    property "initiallySelected" <| (encodeItems (Dict.toList val))
 
 
 onItemArrayChanged : String -> (Dict String String -> msg) -> Attribute msg
@@ -51,14 +53,22 @@ encodeItems items =
 
 decodeItems : Decode.Decoder (List ( String, String ))
 decodeItems =
-    Decode.at [ "detail", "value" ] <| Decode.list <| Decode.tuple2 (,) Decode.string Decode.string
+    Decode.at [ "detail", "value" ] <|
+        Decode.list <|
+            Decode.map2 (,) (Decode.index 0 Decode.string) (Decode.index 1 Decode.string)
 
 
 
 -- The internals
 
 
+port setSelected : List ( String, String ) -> Cmd msg
+
+
 port itemsChanged : (List ( String, String ) -> msg) -> Sub msg
+
+
+port initiallySelectedChanged : (List ( String, String ) -> msg) -> Sub msg
 
 
 type alias Model =
@@ -147,6 +157,7 @@ itemsToList model listIdx ( idx, value ) =
 type Msg
     = Mdl (Material.Msg Msg)
     | ItemsChanged (List ( String, String ))
+    | InitiallySelectedChanged (List ( String, String ))
     | Select String
     | Deselect String
     | MouseOver String
@@ -155,12 +166,15 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case (Debug.log "Listbox" msg) of
-        Mdl action' ->
-            Material.update action' model
+    case msg of
+        Mdl action_ ->
+            Material.update Mdl action_ model
 
         ItemsChanged items ->
             ( { model | items = Dict.fromList items }, Cmd.none )
+
+        InitiallySelectedChanged items ->
+            ( { model | selectedItems = Dict.fromList items }, Cmd.none )
 
         Select idx ->
             case (Dict.get idx model.items) of
@@ -194,10 +208,13 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    itemsChanged ItemsChanged
+    Sub.batch
+        [ itemsChanged ItemsChanged
+        , initiallySelectedChanged InitiallySelectedChanged
+        ]
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
     program
         { init = init
